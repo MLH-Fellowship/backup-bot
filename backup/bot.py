@@ -124,11 +124,12 @@ async def get_messages():
                 except:
                     name = message.author.name
                 
-                mesasage_data = f"{message.created_at}-{name}:{message.clean_content}"
+                mesasage_data = f"{message.created_at} - {name}: {message.clean_content}"
                 if len(message.attachments) > 0:
                     for attachment in message.attachments: 
                         mesasage_data += f',{attachment.url}'
                 channel_data[str(channel.category)][str(channel)].append(mesasage_data)
+            channel_data[str(channel.category)][str(channel)].reverse()
 
     logger.info("Saving stats...")
     save_channel_chats(channel_data)
