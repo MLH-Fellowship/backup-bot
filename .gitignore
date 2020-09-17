@@ -3,3 +3,5 @@ __pycache__
 *.csv
 *.pyc
 .env
+data/
+*.json
