@@ -1,20 +1,28 @@
+import os
 import csv
 import discord
 import logging
 from discord.ext import commands
-
-import stats.util.config as config
-
-logger = logging.getLogger('stats-bot')
+from . import logging as log
+from dotenv import load_dotenv
 
 def init():
+    global logger
     global bot
-    bot = discord.ext.commands.Bot(command_prefix='?')
+    log.init()
+    load_dotenv()
+    logger = logging.getLogger('backup-bot')
+    bot = discord.ext.commands.Bot(command_prefix='backup/')
 
 def get_channels():
-    logger.info("Starting bot...")
+    logger.info("Starting bot for stats...")
     bot.loop.create_task(get_ch())
-    bot.run(config.creds['discord']['token'])
+    bot.run(os.getenv('TOKEN'))
+
+def start_backup():
+    logger.info("Starting bot for backup...")
+    bot.loop.create_task()
+    bot.run(os.getenv('TOKEN'))
 
 async def get_ch():
     await bot.wait_until_ready()
@@ -62,7 +70,6 @@ async def get_ch():
     logger.info("Stopping bot...")
     bot.loop.stop()
 
-
 def save_channel(stats):
     OUTPUT_PATH = "channel_stats.csv"
     writer = csv.writer(open(OUTPUT_PATH, "w+"))
@@ -71,7 +78,6 @@ def save_channel(stats):
     for [name, count] in stats.items():
         writer.writerow([name, count])
 
-
 def save_users(stats):
     OUTPUT_PATH = "user_stats.csv"
     writer = csv.writer(open(OUTPUT_PATH, "w+"))
@@ -79,3 +85,9 @@ def save_users(stats):
 
     for [name, [count, nick]] in stats.items():
         writer.writerow([name, nick, count])
+
+async def get_messages():
+    await bot.wait_until_ready()
+
+def save_channel_chat(messages):
+    pass
