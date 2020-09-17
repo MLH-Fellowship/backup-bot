@@ -3,6 +3,7 @@ import csv
 import json
 import discord
 import logging
+import datetime
 from discord.ext import commands
 from . import logging as log
 from dotenv import load_dotenv
@@ -109,7 +110,7 @@ async def get_messages():
         if isinstance(channel, discord.channel.VoiceChannel):
             continue
         if isinstance(channel, discord.channel.CategoryChannel):
-            print(f"CATEGORY: {channel}")
+            print(f"Getting messages from category: {channel}")
             category = str(channel)
             channel_data[category] = {}
         
@@ -125,7 +126,10 @@ async def get_messages():
                     name = message.author.name
                 if message.clean_content == "":
                     continue
-                mesasage_data = f"{message.created_at},{name}:{message.clean_content}"
+                mesasage_data = f"{message.created_at}-{name}:{message.clean_content}"
+                if len(message.attachments) > 0:
+                    for attachment in message.attachments: 
+                        mesasage_data += f',{attachment.url}'
                 channel_data[category][str(channel)].append(mesasage_data)
 
     logger.info("Saving stats...")
@@ -134,7 +138,8 @@ async def get_messages():
     bot.loop.stop()
 
 def save_channel_chats(messages):
-    OUTPUT_PATH = f"data/backup/messages.json"
+    now = datetime.datetime.now()
+    OUTPUT_PATH = f"data/backup/{str(now)}.json"
     json_content = json.dumps(messages, indent = 4)
     
     with open(OUTPUT_PATH, "w") as outfile: 
