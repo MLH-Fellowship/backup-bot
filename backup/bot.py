@@ -105,17 +105,16 @@ async def get_messages():
     logger.info("Getting data backup...")
 
     channel_data = {}
-    category = ""
     for channel in bot.get_all_channels():
         if isinstance(channel, discord.channel.VoiceChannel):
             continue
-        if isinstance(channel, discord.channel.CategoryChannel):
-            print(f"Getting messages from category: {channel}")
-            category = str(channel)
-            channel_data[category] = {}
         
         if isinstance(channel, discord.channel.TextChannel):
-            channel_data[category][str(channel)] = []
+            if str(channel.category) not in channel_data:
+                channel_data[str(channel.category)] = {}
+                logger.info(f"Getting messages from category: {str(channel.category)}")
+
+            channel_data[str(channel.category)][str(channel)] = []
             async for message in channel.history(limit=None):
                 try:
                     if not message.author.nick == None:
@@ -124,13 +123,12 @@ async def get_messages():
                         name = message.author.name
                 except:
                     name = message.author.name
-                if message.clean_content == "":
-                    continue
+                
                 mesasage_data = f"{message.created_at}-{name}:{message.clean_content}"
                 if len(message.attachments) > 0:
                     for attachment in message.attachments: 
                         mesasage_data += f',{attachment.url}'
-                channel_data[category][str(channel)].append(mesasage_data)
+                channel_data[str(channel.category)][str(channel)].append(mesasage_data)
 
     logger.info("Saving stats...")
     save_channel_chats(channel_data)
@@ -140,7 +138,7 @@ async def get_messages():
 def save_channel_chats(messages):
     now = datetime.datetime.now()
     OUTPUT_PATH = f"data/backup/{str(now)}.json"
-    json_content = json.dumps(messages, indent = 4)
+    json_content = json.dumps(messages, indent=4)
     
     with open(OUTPUT_PATH, "w") as outfile: 
         outfile.write(json_content) 
